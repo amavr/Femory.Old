@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "323447805848",
+    "firebase_url": "https://femory-b01e1.firebaseio.com",
+    "project_id": "femory-b01e1",
+    "storage_bucket": "femory-b01e1.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:323447805848:android:3161966dfef174cc2d3ded",
+        "android_client_info": {
+          "package_name": "com.amavr.femory"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "323447805848-d3cu4h65tk1fttr3etmqva7sqp4nscho.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.amavr.femory",
+            "certificate_hash": "c1c754bae66308ee42ee2169a4bf0ed222f0ec01"
+          }
+        },
+        {
+          "client_id": "323447805848-iep77ef5lqm62v5059p6516jq9a1tq0n.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCM0Bhl0rz1sqjoNy-3ZAJz_AslYK06JNU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "323447805848-iep77ef5lqm62v5059p6516jq9a1tq0n.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -1,0 +1,19 @@
+<resources>
+    <string name="app_name">Femory</string>
+    <string name="db_url">https://femory-b01e1.firebaseio.com/</string>
+    <string name="api_key">AIzaSyCM0Bhl0rz1sqjoNy-3ZAJz_AslYK06JNU</string>
+    <string name="goo_app_id">1:323447805848:android:3161966dfef174cc2d3ded</string>
+
+    <string name="name">Наименование</string>
+    <string name="lists_title">Списки</string>
+    <string name="members_title">Участники</string>
+    <string name="items_title">Список</string>
+    <string name="change_color">Изменить цвет</string>
+    <string name="action_rename">Переименовать</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="hello_items_fragment">Items fragment</string>
+    <string name="hello_lists_fragment">Lists fragment</string>
+    <string name="hello_users_fragment">Users fragment</string>
+</resources>
