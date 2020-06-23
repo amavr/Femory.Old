@@ -35,7 +35,7 @@ public class ListsAdapter
         extends RecyclerView.Adapter<ListsAdapter.ListHolder>
         implements ListSubscriber {
 
-    static final String TAG = "XDBG.adp";
+    static final String TAG = "XDBG.adp-lists";
 
     List<ListInfo> lists = new ArrayList<>();
     List<String> keys = new ArrayList<>();
@@ -183,13 +183,13 @@ public class ListsAdapter
                         }
                     });
 
-            popupMenu.setOnDismissListener(new PopupMenu.OnDismissListener() {
-                @Override
-                public void onDismiss(PopupMenu menu) {
-                    Toast.makeText(view.getContext(), "onDismiss",
-                            Toast.LENGTH_SHORT).show();
-                }
-            });
+//            popupMenu.setOnDismissListener(new PopupMenu.OnDismissListener() {
+//                @Override
+//                public void onDismiss(PopupMenu menu) {
+//                    Toast.makeText(view.getContext(), "onDismiss",
+//                            Toast.LENGTH_SHORT).show();
+//                }
+//            });
             popupMenu.show();
         }
 

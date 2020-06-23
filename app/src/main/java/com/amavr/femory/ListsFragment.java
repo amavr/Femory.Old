@@ -36,7 +36,7 @@ public class ListsFragment extends Fragment {
 
     public ListsFragment() {
         // Required empty public constructor
-        Log.d(TAG, "ListsFragment");
+        Log.d(TAG, "constructor");
     }
 
     /**
