@@ -182,6 +182,21 @@ public class XStorage implements ValueEventListener {
         subscribers.remove(subscriber);
     }
 
+    public void notifySubs(){
+        Log.d(TAG, "notify all");
+
+        for(ListSubscriber sub: subscribers){
+            String sub_key = sub.getKey();
+            for(Map.Entry<String, ListInfo> pair: lists.entrySet()){
+                ListInfo li = pair.getValue();
+
+                if(sub_key == null || sub_key.equals(li.key)){
+                    sub.onChange(li.key, li);
+                }
+            }
+        }
+    }
+
     @Override
     public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
         // This method is called once with the initial value and again

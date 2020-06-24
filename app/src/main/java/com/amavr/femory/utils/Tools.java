@@ -73,7 +73,6 @@ public class Tools {
         Toast.makeText(context, text, Toast.LENGTH_SHORT).show();
     }
 
-
     public static String loadAssetAsString(Context context, String assetName){
         try {
             InputStream is = context.getAssets().open(assetName);
@@ -117,4 +116,5 @@ public class Tools {
             e.printStackTrace();
         }
         return "";
-    }}
+    }
+}
