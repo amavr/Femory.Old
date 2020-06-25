@@ -22,6 +22,7 @@ public class XPoint implements ListKeyHolder {
 
     private static XPoint instance = null;
     private XStorage x;
+    public String AppKey;
 
     private Gson gson = new Gson();
     /// В локальном хранилище лежат только ключи списков
@@ -39,6 +40,8 @@ public class XPoint implements ListKeyHolder {
                 instance.mPrefs.edit().putString(APPKEY, app_id).commit();
                 Log.d(TAG, app_id);
             }
+
+            instance.AppKey = instance.mPrefs.getString(APPKEY, "");
 
 //            Log.d(TAG, instance.mPrefs.getString(APPKEY, ""));
 //            instance.delListKey("1f199ad587013357c93755ba10727519");
@@ -79,6 +82,7 @@ public class XPoint implements ListKeyHolder {
     /// сохранить список ключей в лок.хр
     private void saveListKeys(List<String> keys){
         mPrefs.edit().putString(LISTKEY, gson.toJson(keys)).commit();
+        x.refreshList();
     }
 
     /// добавить ключ списка в лок.хр.
@@ -93,5 +97,10 @@ public class XPoint implements ListKeyHolder {
         List<String> keys = getListKeys();
         keys.remove(key);
         saveListKeys(keys);
+    }
+
+    @Override
+    public String getAppKey() {
+        return AppKey;
     }
 }

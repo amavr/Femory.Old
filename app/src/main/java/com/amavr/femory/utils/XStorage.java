@@ -15,6 +15,7 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 import com.google.gson.Gson;
 
@@ -103,6 +104,29 @@ public class XStorage implements ValueEventListener {
         return ref;
     }
 
+    public void refreshList(){
+        lists = new HashMap<>();
+        for(String key: holder.getListKeys()){
+            DatabaseReference ref = createRef("lists/" + key, this);
+            Query query = ref.orderByKey();
+            query.addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
+                    ListInfo li = dataSnapshot.getValue(ListInfo.class);
+                    if (li != null) {
+                        li.ref = dataSnapshot.getRef();
+                        lists.put(li.key, li);
+                    }
+                }
+
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
+
+                }
+            });
+        }
+    }
+
     public List<ListInfo> getLists(){
         List<ListInfo> list = new ArrayList<>();
         for(Map.Entry<String, ListInfo> pair: lists.entrySet()){
@@ -112,24 +136,13 @@ public class XStorage implements ValueEventListener {
         return list;
     }
 
-    /// поиск списка по названию (для пользователя)
-    public ListInfo getListKey(String name){
-        for(Map.Entry<String, ListInfo> pair: lists.entrySet()){
-            ListInfo li = pair.getValue();
-            if(li.name.equalsIgnoreCase(name)){
-                return li;
-            }
-        }
-        return null;
-    }
-
     /// добавление в FB списка пользователем
     public ListInfo addNewList(String name){
         Log.d(TAG, String.format("addNewList: %s", name));
 
         ListInfo li = new ListInfo();
         li.name = name;
-        li.key = Tools.generateKey();
+        li.key = String.format("%s:%s", holder.getAppKey(), Tools.generateKey());
 
         DatabaseReference ref = createRef("lists/" + li.key, this);
         li.ref = ref;
@@ -146,7 +159,11 @@ public class XStorage implements ValueEventListener {
 
         DatabaseReference ref = (DatabaseReference) li.ref;
         ref.removeEventListener(this);
-        ref.removeValue();
+
+        /// из базы удаляется только если это список автора (начинается с его ключа)
+        if(key.startsWith(holder.getAppKey())) {
+            ref.removeValue();
+        }
 
         lists.remove(key);
         holder.delListKey(key);

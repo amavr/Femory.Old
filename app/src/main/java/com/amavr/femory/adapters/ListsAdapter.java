@@ -2,6 +2,7 @@ package com.amavr.femory.adapters;
 
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
@@ -159,6 +160,8 @@ public class ListsAdapter
             PopupMenu popupMenu = new PopupMenu(v.getContext(), v);
             popupMenu.inflate(R.menu.lists_menu);
 
+            final ListInfo li = this.li;
+
             popupMenu
                     .setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
                         @Override
@@ -167,16 +170,19 @@ public class ListsAdapter
                                 case R.id.action_delete:
                                     deleteList(view);
                                     return true;
+
                                 case R.id.action_rename:
-                                    Toast.makeText(view.getContext(),
-                                            "Вы выбрали RENAME",
-                                            Toast.LENGTH_SHORT).show();
                                     return renameList(view);
+
                                 case R.id.action_share:
-                                    Toast.makeText(view.getContext(),
-                                            "Вы выбрали SHARE",
-                                            Toast.LENGTH_SHORT).show();
+                                    Intent sendIntent = new Intent();
+                                    sendIntent.setAction(Intent.ACTION_SEND);
+                                    sendIntent.putExtra(Intent.EXTRA_TEXT, String.format("http://femory.ru/share/%s", li.key));
+                                    sendIntent.setType("text/plain");
+                                    Intent shareIntent = Intent.createChooser(sendIntent, null);
+                                    main_activity.startActivity(shareIntent);
                                     return true;
+
                                 default:
                                     return false;
                             }

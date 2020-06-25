@@ -9,4 +9,5 @@ public interface ListKeyHolder {
     List<String> getListKeys();
     void addListKey(String key);
     void delListKey(String key);
+    String getAppKey();
 }
