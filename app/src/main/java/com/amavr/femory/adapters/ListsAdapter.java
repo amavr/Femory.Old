@@ -9,7 +9,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
-import android.widget.ListAdapter;
 import android.widget.PopupMenu;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -17,7 +16,6 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentActivity;
 import androidx.fragment.app.FragmentTransaction;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -38,23 +36,15 @@ public class ListsAdapter
 
     static final String TAG = "XDBG.adp-lists";
 
-    List<ListInfo> lists = new ArrayList<>();
-    List<String> keys = new ArrayList<>();
-
     RecyclerView rvList;
     MainActivity main_activity; /// MainActivity
 
     public ListsAdapter(MainActivity activity){
         this.main_activity = activity;
-        lists = XPoint.getInstance().getLists();
     }
 
-    public ListInfo createList(String name){
-        ListInfo li = XPoint.getInstance().getStorage().addNewList(name);
-        if(li != null) {
-            lists.add(li);
-        }
-        return li;
+    public void createList(String name){
+        XPoint.getInstance().getStorage().addListToFB(name);
     }
 
     @NonNull
@@ -71,9 +61,7 @@ public class ListsAdapter
             @Override
             public void onClick(View v) {
                 int position = rvList.getChildLayoutPosition(view);
-                ListInfo li = lists.get(position);
-                String item = li.name;
-                Toast.makeText(view.getContext(), item, Toast.LENGTH_LONG).show();
+                ListInfo li = XPoint.getInstance().getStorage().getLists().get(position);
 
                 Fragment newFragment = ItemsFragment.newInstance(li);
                 FragmentTransaction transaction = main_activity.getSupportFragmentManager().beginTransaction();
@@ -90,34 +78,19 @@ public class ListsAdapter
     @Override
     public void onBindViewHolder(@NonNull ListHolder holder, int position) {
         Log.d(TAG, "onBindViewHolder");
-        holder.bind(this.lists.get(position));
+        holder.bind(position);
     }
 
     @Override
     public int getItemCount() {
-        Log.d(TAG, String.format("getItemCount: %s", this.lists.size()));
-        return this.lists.size();
+        List<ListInfo> lists = XPoint.getInstance().getStorage().getLists();
+        Log.d(TAG, String.format("getItemCount: %s", lists.size()));
+        return lists.size();
     }
 
     @Override
     public void onChange(String key, ListInfo li) {
         Log.d(TAG, String.format("onChange, key: %s", key));
-        boolean found = false;
-        for(int i = lists.size() - 1; i >= 0; i--){
-            if(lists.get(i).key.equals(key)){
-                found = true;
-                if(li == null){
-                    lists.remove(i);
-                }
-                else {
-                    lists.set(i, li);
-                }
-                break;
-            }
-        }
-        if(!found){
-            lists.add(li);
-        }
         notifyDataSetChanged();
     }
 
@@ -150,8 +123,9 @@ public class ListsAdapter
             });
         }
 
-        public void bind(ListInfo li){
-            Log.d(TAG, "ListHolder.bind");
+        public void bind(int position){
+            ListInfo li = XPoint.getInstance().getStorage().getLists().get(position);
+            Log.d(TAG, String.format("bind(%s) li.name: %s", position, li.name));
             this.li = li;
             tvName.setText(this.li.name);
         }
@@ -208,8 +182,8 @@ public class ListsAdapter
                     .setIcon(android.R.drawable.ic_dialog_alert)
                     .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int whichButton) {
-                            Tools.toastIt(context, "OK");
-                            XPoint.getInstance().getStorage().delList(li.key);
+//                            Tools.toastIt(context, "OK");
+                            XPoint.getInstance().getStorage().delListFromFB(li.key);
                             onChange(li.key, null);
                         }})
                     .setNegativeButton(android.R.string.no, null)
@@ -232,7 +206,7 @@ public class ListsAdapter
                         XStorage x = XPoint.getInstance().getStorage();
                         tvName.setText(text);
                         li.name = text;
-                        x.updList(li);
+                        x.updListAtFB(li);
                     }
                 }
             });

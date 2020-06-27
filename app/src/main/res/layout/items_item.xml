@@ -38,7 +38,6 @@
                 android:layout_width="16dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
-                android:backgroundTintMode="src_over"
                 android:visibility="visible"
                 app:srcCompat="@drawable/ic_check_black_24dp" />
 

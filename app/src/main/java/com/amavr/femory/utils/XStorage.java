@@ -30,7 +30,7 @@ public class XStorage implements ValueEventListener {
 
     private Context context;
     private Gson gson = new Gson();
-    private HashMap<String, ListInfo> lists = new HashMap<>();
+    private HashMap<String, ListInfo> lists = new HashMap<>();;
     private ListKeyHolder holder;
 
     private List<ListSubscriber> subscribers = new ArrayList<>();
@@ -39,13 +39,13 @@ public class XStorage implements ValueEventListener {
         this.context = context;
         this.holder = holder;
 
-        for(String key: holder.getListKeys()){
-            ListInfo li = new ListInfo();
-            li.key = key;
-            lists.putIfAbsent(key, li);
-        }
-
         initFirebase();
+
+        /// запрос списков в FB по их ключам
+        for(String key: holder.getListKeys()){
+            queryListByKey(key);
+//            lists.put(key, queryListByKey(key));
+        }
     }
 
     private void initFirebase(){
@@ -56,41 +56,6 @@ public class XStorage implements ValueEventListener {
                     .setDatabaseUrl(context.getString(R.string.db_url)) // Required for RTDB.
                     .build();
             FirebaseApp.initializeApp(context, options, "LISTS");
-
-            /// список узлов БД по ID списков
-            for(Map.Entry<String, ListInfo> pair: lists.entrySet()){
-                ListInfo li = pair.getValue();
-                Log.d(TAG, "list key: " + li.key);
-                li.ref = createRef("lists/" + li.key, this);
-            }
-
-
-//            String ref_node = "lists/" + prefs.getString(APPKEY, "");
-//            mRef = db.getReference(ref_node);
-//            mRef.addValueEventListener(this);
-//
-//            Query query = mRef.orderByKey();
-//            query.addListenerForSingleValueEvent(new ValueEventListener() {
-//                @Override
-//                public void onDataChange(DataSnapshot dataSnapshot) {
-//                    ListInfo li = dataSnapshot.getValue(ListInfo.class);
-//                    if (li == null) {
-//                        Log.d(TAG, "need to create");
-//                        li = ListInfo.createMyList();
-//                        mRef.setValue(li);
-//                    }
-//                    else{
-//                        Log.d(TAG, "Not need to create");
-//                    }
-//                }
-//
-//                @Override
-//                public void onCancelled(DatabaseError databaseError) {
-//
-//                }
-//            });
-
-//            ref.addValueEventListener(listener);
         }
         catch(Exception ex){
             Log.e(TAG, ex.getMessage());
@@ -104,60 +69,47 @@ public class XStorage implements ValueEventListener {
         return ref;
     }
 
-    public void refreshList(){
-        lists = new HashMap<>();
-        for(String key: holder.getListKeys()){
-            DatabaseReference ref = createRef("lists/" + key, this);
-            Query query = ref.orderByKey();
-            query.addListenerForSingleValueEvent(new ValueEventListener() {
-                @Override
-                public void onDataChange(DataSnapshot dataSnapshot) {
-                    ListInfo li = dataSnapshot.getValue(ListInfo.class);
-                    if (li != null) {
-                        li.ref = dataSnapshot.getRef();
-                        lists.put(li.key, li);
-                    }
-                }
-
-                @Override
-                public void onCancelled(DatabaseError databaseError) {
-
-                }
-            });
-        }
-    }
-
-    public List<ListInfo> getLists(){
-        List<ListInfo> list = new ArrayList<>();
-        for(Map.Entry<String, ListInfo> pair: lists.entrySet()){
-            ListInfo li = pair.getValue();
-            list.add(pair.getValue());
-        }
-        return list;
-    }
-
-    /// добавление в FB списка пользователем
-    public ListInfo addNewList(String name){
-        Log.d(TAG, String.format("addNewList: %s", name));
-
+    public ListInfo queryListByKey(String key){
         ListInfo li = new ListInfo();
-        li.name = name;
-        li.key = String.format("%s:%s", holder.getAppKey(), Tools.generateKey());
-
-        DatabaseReference ref = createRef("lists/" + li.key, this);
-        li.ref = ref;
-        ref.setValue(li);
-
-        lists.put(li.key, li);
-        holder.addListKey(li.key);
+        li.key = key;
+        li.ref = createRef("lists/" + key, this);
         return li;
     }
 
-    public void delList(String key){
+    /// Списки
+    public List<ListInfo> getLists(){
+        return new ArrayList<>(lists.values());
+    }
+
+    /// добавление в FB списка пользователем
+    public void addListToFB(String name){
+        Log.d(TAG, String.format("addNewList: %s", name));
+
+        String key = String.format("%s:%s", holder.getAppKey(), Tools.generateKey());
+
+        ListInfo li = new ListInfo();
+        li.name = name;
+        li.key = key;
+
+        /// сохранить в FB и подписаться на изменения
+        DatabaseReference ref = createRef("lists/" + key, this);
+        li.ref = ref;
+        ref.setValue(li);
+
+        /// добавление списка-объекта
+        lists.put(key, li);
+
+        /// добавление ключа списка в локальное хранилище
+        holder.addListKey(li.key);
+    }
+
+    public void delListFromFB(String key){
         Log.d(TAG, String.format("delList: %s", key));
         ListInfo li = lists.get(key);
 
         DatabaseReference ref = (DatabaseReference) li.ref;
+
+        /// удаление уведомления на изменение списка
         ref.removeEventListener(this);
 
         /// из базы удаляется только если это список автора (начинается с его ключа)
@@ -165,15 +117,21 @@ public class XStorage implements ValueEventListener {
             ref.removeValue();
         }
 
+        /// удаление списка-объекта
         lists.remove(key);
+
+        /// удаление ключа списка из локального хранилища
         holder.delListKey(key);
+
+        /// TODO: оповестить подписчиков, что список удален
+
     }
 
-    public void updList(ListInfo li){
+    public void updListAtFB(ListInfo li){
         Log.d(TAG, String.format("updList: %s", li.key));
+        ((DatabaseReference)li.ref).setValue(li);
         if(lists.containsKey(li.key)){
             lists.replace(li.key, li);
-            ((DatabaseReference)li.ref).setValue(li);
         }
     }
 
@@ -184,9 +142,7 @@ public class XStorage implements ValueEventListener {
             subscribers.add(subscriber);
 
             String sub_key = subscriber.getKey();
-            for(Map.Entry<String, ListInfo> pair: lists.entrySet()){
-                ListInfo li = pair.getValue();
-
+            for(ListInfo li: getLists()){
                 if(sub_key == null || sub_key.equals(li.key)){
                     subscriber.onChange(li.key, li);
                 }
@@ -204,9 +160,7 @@ public class XStorage implements ValueEventListener {
 
         for(ListSubscriber sub: subscribers){
             String sub_key = sub.getKey();
-            for(Map.Entry<String, ListInfo> pair: lists.entrySet()){
-                ListInfo li = pair.getValue();
-
+            for(ListInfo li: getLists()){
                 if(sub_key == null || sub_key.equals(li.key)){
                     sub.onChange(li.key, li);
                 }
@@ -214,22 +168,32 @@ public class XStorage implements ValueEventListener {
         }
     }
 
+    /// получение ответа по запрошенному по ключу списку
     @Override
     public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-        // This method is called once with the initial value and again
-        // whenever data at this location is updated.
         try {
             String key = dataSnapshot.getKey();
             Log.d(TAG, "changed: "+ key);
 
             ListInfo li = dataSnapshot.getValue(ListInfo.class);
+            /// в базе не найден, значит удалить с клиента
             if(li == null){
-                delList(key);
+                /// удаление списка-объекта
+                if(lists.containsKey(key)){
+                    lists.remove(key);
+                }
+                /// удаление ключа списка
+                holder.delListKey(key);
             }
             else{
                 li.key = key;
                 li.ref = dataSnapshot.getRef();
-                lists.replace(li.key, li);
+                if(lists.containsKey(key)){
+                    lists.replace(li.key, li);
+                }
+                else{
+                    lists.put(key, li);
+                }
             }
 
             for(ListSubscriber sub: subscribers){

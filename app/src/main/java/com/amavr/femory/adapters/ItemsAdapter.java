@@ -15,7 +15,6 @@ import com.amavr.femory.R;
 import com.amavr.femory.models.ItemInfo;
 import com.amavr.femory.models.ListInfo;
 import com.amavr.femory.utils.XPoint;
-import com.amavr.femory.utils.XStorage;
 
 public class ItemsAdapter
         extends RecyclerView.Adapter<ItemsAdapter.ItemHolder>
@@ -23,24 +22,24 @@ public class ItemsAdapter
 
     static final String TAG = "XDBG.adp-items";
 
-    ListInfo list;
+    ListInfo li;
     RecyclerView rvList;
     MainActivity main_activity; /// MainActivity
 
     public ItemsAdapter(MainActivity activity, ListInfo list){
         this.main_activity = activity;
-        this.list = list;
+        this.li = list;
     }
 
     public ItemInfo createItem(String name){
         ItemInfo  item = new ItemInfo();
         item.setName(name);
         item.setDone(false);
-        if(list != null) {
-            list.items.add(item);
+        if(li != null) {
+            li.items.add(item);
         }
 
-        XPoint.getInstance().getStorage().updList(list);
+        XPoint.getInstance().getStorage().updListAtFB(li);
         return item;
     }
 
@@ -58,12 +57,12 @@ public class ItemsAdapter
 
     @Override
     public void onBindViewHolder(@NonNull ItemHolder holder, int position) {
-        holder.bind(this.list.items.get(position));
+        holder.bind(this.li.items.get(position));
     }
 
     @Override
     public int getItemCount() {
-        int num = this.list.items.size();
+        int num = this.li.items.size();
         Log.d(TAG, String.format("getItemCount: %s", num));
         return num;
     }
@@ -72,18 +71,21 @@ public class ItemsAdapter
     public void onChange(String key, ListInfo li) {
         Log.d(TAG, String.format("onChange, key: %s", key));
 
-        if(key == list.key){
-            list = li;
+        if(key == this.li.key){
+            this.li = li;
+            main_activity.setAppHeader(li.name);
         }
         notifyDataSetChanged();
     }
 
     @Override
     public String getKey() {
-        return list.key;
+        return li.key;
     }
 
-    class ItemHolder extends RecyclerView.ViewHolder {
+    class ItemHolder
+            extends RecyclerView.ViewHolder
+            implements View.OnClickListener {
 
         View view;
 
@@ -95,19 +97,19 @@ public class ItemsAdapter
             super(itemView);
             Log.d(TAG, "ItemHolder");
             view = itemView;
-
             tvName = (TextView) view.findViewById(R.id.tvName);
             btnDone = (ImageView) view.findViewById(R.id.btnDone);
-            btnDone.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    Log.d(TAG, "done clicked");
-                    item.setDone(!item.isDone());
-                    setBtnDone(item.isDone());
-                    XPoint.getInstance().getStorage().updList(list);
-                    notifyDataSetChanged();
-                }
-            });
+
+            view.setOnClickListener(this);
+            tvName.setOnClickListener(this);
+            btnDone.setOnClickListener(this);
+        }
+
+        private void switchDone(){
+            item.setDone(!item.isDone());
+            setBtnDone(item.isDone());
+            XPoint.getInstance().getStorage().updListAtFB(li);
+            notifyDataSetChanged();
         }
 
         public void bind(ItemInfo item){
@@ -124,6 +126,11 @@ public class ItemsAdapter
             else{
                 btnDone.setImageIcon(null);
             }
+        }
+
+        @Override
+        public void onClick(View v) {
+            switchDone();
         }
     }
 }

@@ -42,18 +42,13 @@ public class MainActivity
                 .add(R.id.flContent, frgLists)
                 .commit();
 
-         XPoint.create(this);
+        XPoint.create(this);
 
-         handleIntent();
-
-//        String node_id = "lists/abc234";
-//        Tests.initDB(this, this, node_id);
-//        ListInfo li = Tests.generateList(this);
-//        Tests.testWriteDB(node_id,li);
+        handleIntent();
     }
 
     @Override
-    public void onNewIntent(Intent intent){
+    public void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
         setIntent(intent);
 
@@ -77,7 +72,8 @@ public class MainActivity
 
         String key = uri.getPath().replace("/share/", "");
         XPoint.getInstance().addListKey(key);
-        XPoint.getInstance().getStorage().notifySubs();
+        XPoint.getInstance().getStorage().queryListByKey(key);
+//        XPoint.getInstance().getStorage().notifySubs();
 
 //        // Let the deep linker do its job
 //        Bundle data = mDeepLinker.buildBundle(uri);
@@ -103,7 +99,7 @@ public class MainActivity
         return super.onOptionsItemSelected(item);
     }
 
-    public void setAppHeader(String Text){
+    public void setAppHeader(String Text) {
         getSupportActionBar().setTitle(Text);
     }
 }

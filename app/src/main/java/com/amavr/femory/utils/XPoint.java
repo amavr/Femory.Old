@@ -11,7 +11,6 @@ import com.google.gson.Gson;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.ListIterator;
 
 public class XPoint implements ListKeyHolder {
 
@@ -20,13 +19,17 @@ public class XPoint implements ListKeyHolder {
     private static final String LISTKEY = "lists";
     private static final String TAG = "XDBG.XPoint";
 
+    private Gson gson = new Gson();
+
     private static XPoint instance = null;
     private XStorage x;
-    public String AppKey;
-
-    private Gson gson = new Gson();
-    /// В локальном хранилище лежат только ключи списков
+    /// В локальном хранилище лежат только ключи списков и ключ приложения
     private SharedPreferences mPrefs = null;
+
+    /// ключ приложения
+    public String AppKey;
+    /// Ключи списков
+    public List<String> keys;
 
     public static XPoint create(Context context){
         if(instance == null) {
@@ -40,16 +43,11 @@ public class XPoint implements ListKeyHolder {
                 instance.mPrefs.edit().putString(APPKEY, app_id).commit();
                 Log.d(TAG, app_id);
             }
-
             instance.AppKey = instance.mPrefs.getString(APPKEY, "");
 
-//            Log.d(TAG, instance.mPrefs.getString(APPKEY, ""));
-//            instance.delListKey("1f199ad587013357c93755ba10727519");
-//            instance.mPrefs.edit().putString(LISTKEY, "[]").commit();
-
-            /// ни одного списка еще нет
-            if (!instance.mPrefs.contains(LISTKEY)) {
-            }
+            String json = instance.mPrefs.getString(LISTKEY, "[]");
+            String[] ids = instance.gson.fromJson(json, String[].class);
+            instance.keys = new ArrayList<String>(Arrays.asList(ids));
 
             instance.x = new XStorage(context, instance);
         }
@@ -66,37 +64,26 @@ public class XPoint implements ListKeyHolder {
         return instance;
     }
 
-    /// Получить все списки
-    public List<ListInfo> getLists(){
-        return x.getLists();
-    }
-
     /// Получить все ключи списков из лок.хранилища
     public List<String> getListKeys(){
-        String json = mPrefs.getString(LISTKEY, "[]");
-        Gson gson = new Gson();
-        String[] ids = gson.fromJson(json, String[].class);
-        return new ArrayList<String>(Arrays.asList(ids));
+        return this.keys;
     }
 
     /// сохранить список ключей в лок.хр
-    private void saveListKeys(List<String> keys){
-        mPrefs.edit().putString(LISTKEY, gson.toJson(keys)).commit();
-        x.refreshList();
+    private void saveKeys(){
+        mPrefs.edit().putString(LISTKEY, gson.toJson(this.keys)).commit();
     }
 
     /// добавить ключ списка в лок.хр.
     public void addListKey(String key){
-        List<String> keys = getListKeys();
         keys.add(key);
-        saveListKeys(keys);
+        saveKeys();
     }
 
     /// удалить ключ списка из лок.хр.
     public void delListKey(String key) {
-        List<String> keys = getListKeys();
         keys.remove(key);
-        saveListKeys(keys);
+        saveKeys();
     }
 
     @Override
