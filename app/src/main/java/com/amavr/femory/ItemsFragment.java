@@ -4,6 +4,7 @@ import android.content.Context;
 import android.os.Bundle;
 
 import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -15,6 +16,7 @@ import android.view.ViewGroup;
 import com.amavr.femory.adapters.ChangedTextCallback;
 import com.amavr.femory.adapters.ItemsAdapter;
 import com.amavr.femory.adapters.ListSubscriber;
+import com.amavr.femory.adapters.SwipeController;
 import com.amavr.femory.models.ListInfo;
 import com.amavr.femory.utils.Tools;
 import com.amavr.femory.utils.XPoint;
@@ -91,6 +93,11 @@ public class ItemsFragment extends Fragment {
         LinearLayoutManager manager = new LinearLayoutManager(context);
         rvItems.setLayoutManager(manager);
         rvItems.setAdapter(adp);
+
+        SwipeController swipeController = new SwipeController();
+        ItemTouchHelper itemTouchHelper = new ItemTouchHelper(swipeController);
+        itemTouchHelper.attachToRecyclerView(rvItems);
+
 
         FloatingActionButton fab = (FloatingActionButton)v.findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {

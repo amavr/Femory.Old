@@ -11,11 +11,13 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.amavr.femory.adapters.ChangedTextCallback;
 import com.amavr.femory.adapters.ListsAdapter;
+import com.amavr.femory.adapters.SwipeController;
 import com.amavr.femory.utils.Tools;
 import com.amavr.femory.utils.XPoint;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
